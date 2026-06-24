@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fine Mess — Creative projects that make a mark</title>
+  <meta name="description" content="Fine Mess is a creative studio founded on integrity of creativity. Not a style but a standard." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Skip link for keyboard users -->
+  <a class="skip-link" href="#manifesto">Skip to manifesto</a>
+
+  <!-- Scroll progress hairline (fills left-to-right as you scrub the manifesto) -->
+  <div class="progress" aria-hidden="true"></div>
+
+  <!-- ===================================================================
+       STICKY NAV
+       Solid black backdrop so body copy never clashes as it scrolls under.
+       CONTACT only, centred + large (matches the Figma). Scrolls to the
+       contact block at the end.
+  ==================================================================== -->
+  <header class="nav">
+    <a class="nav__link" href="#contact">Contact</a>
+  </header>
+
+  <main>
+
+    <!-- ===================================================================
+         MANIFESTO
+         ---------------------------------------------------------------
+         TO EDIT THE COPY: each <p class="stanza"> is one block of the
+         manifesto. Just write the sentence as plain text.
+
+         • Add a block     -> copy a <p class="stanza">…</p> line.
+         • Remove a block   -> delete the whole <p class="stanza">…</p> line.
+         • Line breaks are AUTOMATIC and responsive — do NOT add <br>.
+         • Keep blocks short (a line or two) — they read best that way.
+
+         The hover-particle effect is added automatically by script.js;
+         you never need to touch the markup for it to work.
+    ==================================================================== -->
+    <section id="manifesto" class="manifesto" aria-label="The Fine Mess manifesto">
+
+      <p class="stanza">Fine Mess is a creative studio founded on integrity of creativity.</p>
+
+      <p class="stanza">Because too often we hear &lsquo;no&rsquo; through fear.</p>
+
+      <p class="stanza">Ideas and innovation wilt because of &lsquo;what if?&rsquo;</p>
+
+      <p class="stanza">Watered down to dry out. Ships that never leave safe harbour.</p>
+
+      <p class="stanza">Well for us idea is king.</p>
+
+      <p class="stanza">Not process. Not parent. Not procurement or placement or palette.</p>
+
+      <p class="stanza">Idea.</p>
+
+      <p class="stanza">We&rsquo;re here to smash champagne against their hulls.</p>
+
+      <p class="stanza">And all our energy goes towards making them better.</p>
+
+      <p class="stanza">We&rsquo;re in the business of creative direction, not creative protection.</p>
+
+      <p class="stanza">Acceptable is unacceptable.</p>
+
+      <!-- NOTE: Figma read "JFDI can JFD1" — corrected the typo to "JFDI". Revert if intended. -->
+      <p class="stanza">And JFDI can JFDI. Anyway, properly realised creative returns the most profit.</p>
+
+      <p class="stanza">Not to mention pride.</p>
+
+      <p class="stanza">So we craft the things that scare us a little.</p>
+
+      <p class="stanza">And respect audiences a lot. That entertain and educate. Challenge and sooth.</p>
+
+      <p class="stanza">Message and move. Brands, campaigns, podcasts, platforms, design, music, merch, movies&hellip;</p>
+
+      <p class="stanza">You name it, we&rsquo;ll fame it.</p>
+
+      <p class="stanza">Because people deserve it.</p>
+
+      <p class="stanza">And if we don&rsquo;t know how, we&rsquo;ll learn.</p>
+
+      <p class="stanza">Because done is better than perfect. Then we perfect that.</p>
+
+      <p class="stanza">That&rsquo;s Fine Mess.</p>
+
+      <p class="stanza">Not a style but a standard.</p>
+
+      <p class="stanza">A mantra, a method and a mission.</p>
+
+      <p class="stanza stanza--mark">Fine Mess</p>
+
+      <p class="stanza">Creative projects that make a mark.</p>
+
+    </section>
+
+    <!-- ===================================================================
+         CONTACT  — the CONTACT nav item scrolls here. Edit the email below.
+    ==================================================================== -->
+    <section id="contact" class="contact" aria-label="Contact Fine Mess">
+      <p class="contact__eyebrow">Get in touch</p>
+      <!-- EDIT EMAIL HERE (appears in the href and the visible text) -->
+      <a class="contact__email" href="mailto:hello@finemess.studio">hello@finemess.studio</a>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <!-- EDIT FOOTER LINE HERE -->
+    <span>&copy; <span class="footer__year">2026</span> Fine Mess</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
