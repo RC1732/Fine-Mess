@@ -1,9 +1,9 @@
 /* ====================================================================
    FINE MESS — one-page manifesto
-   Black background, white uppercase grotesque, centred, lots of scroll.
-   No web fonts (featherweight). Interaction lives in script.js:
-   on scroll, lines rise in cleanly; on hover (desktop), the letters
-   nearest the cursor flee and dissolve into particles, then reassemble.
+   Type matched to the Figma: Helvetica Neue Bold, ~60px on desktop,
+   tight leading (~0.9), −0.02em tracking, wide (~926px) centred measure.
+   Interaction (script.js): lines rise in on scroll; on hover (desktop)
+   the letters nearest the cursor SHATTER into fragments and reform.
    ==================================================================== */
 
 /* ---- Design tokens ---------------------------------------------- */
@@ -12,30 +12,29 @@
   --fg:   #ffffff;
   --hair: rgba(255,255,255,0.10);
 
-  /* Grotesque stack — true to the Figma (Helvetica Neue Bold) */
+  /* Grotesque stack — Helvetica Neue Bold, per the Figma */
   --font: "Helvetica Neue", "Helvetica", "Arial", system-ui, sans-serif;
 
-  /* Manifesto type scale — fluid from mobile to desktop */
-  --type-manifesto: clamp(2rem, 7.2vw, 4.25rem);
+  /* Manifesto type scale — tops out at ~60px (3.75rem) to match the Figma */
+  --type-manifesto: clamp(1.85rem, 6.4vw, 3.75rem);
 
-  --nav-h: 4rem;            /* sticky nav height */
+  /* Centred measure ~926px, matching the Figma text frame */
+  --measure: 57.875rem;
+
+  --nav-h: 4.5rem;
 }
 
 /* ---- Reset ------------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html {
-  background: var(--bg);
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
+html { background: var(--bg); scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font);
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 0.9;                 /* matched to the Figma (52.9 / 60) */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -44,10 +43,8 @@ body {
 
 /* ---- Accessibility: skip link & focus --------------------------- */
 .skip-link {
-  position: fixed; top: 0.5rem; left: 50%;
-  transform: translate(-50%, -200%);
-  z-index: 100; padding: 0.5rem 0.9rem;
-  background: #fff; color: #000;
+  position: fixed; top: 0.5rem; left: 50%; transform: translate(-50%, -200%);
+  z-index: 100; padding: 0.5rem 0.9rem; background: #fff; color: #000;
   font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none;
 }
 .skip-link:focus { transform: translate(-50%, 0); }
@@ -56,64 +53,63 @@ a:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
 /* ---- Scroll progress hairline ----------------------------------- */
 .progress {
   position: fixed; inset: 0 0 auto 0; height: 2px; z-index: 60;
-  background: var(--fg); opacity: 0.55;
-  transform: scaleX(0); transform-origin: 0 50%;
+  background: var(--fg); opacity: 0.55; transform: scaleX(0); transform-origin: 0 50%;
   pointer-events: none;
 }
 
-/* ---- Sticky nav -------------------------------------------------- */
+/* ---- Sticky nav (CONTACT — big + centred) ----------------------- */
 .nav {
   position: sticky; top: 0; z-index: 50;
-  display: flex; justify-content: center; align-items: center;   /* CONTACT centred */
+  display: flex; justify-content: center; align-items: center;
   height: var(--nav-h);
   padding: 0 clamp(1.1rem, 4vw, 2.5rem);
-  background: var(--bg);                                         /* SOLID black backdrop */
+  background: var(--bg);                          /* SOLID black backdrop */
   border-bottom: 1px solid var(--hair);
 }
 .nav__link {
   color: var(--fg);
-  font-size: clamp(1.05rem, 2.4vw, 1.5rem);   /* BIG */
-  font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none;
+  font-size: clamp(1.5rem, 3.4vw, 2.25rem);       /* BIG */
+  font-weight: 700; letter-spacing: -0.01em; text-transform: uppercase; text-decoration: none;
   padding: 0.35rem 0; position: relative;
 }
 .nav__link::after {
-  content: ""; position: absolute; left: 0; bottom: 0.05rem;
-  width: 100%; height: 1px; background: currentColor;
-  transform: scaleX(0); transform-origin: 0 50%;
+  content: ""; position: absolute; left: 0; bottom: 0.05rem; width: 100%; height: 1px;
+  background: currentColor; transform: scaleX(0); transform-origin: 0 50%;
   transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
 }
 .nav__link:hover::after, .nav__link:focus-visible::after { transform: scaleX(1); }
 
-/* ---- Particle canvas overlay ------------------------------------ */
-.fx { position: fixed; inset: 0; z-index: 40; pointer-events: none; }
-
 /* ---- Manifesto --------------------------------------------------- */
 .manifesto {
-  padding: 12vh clamp(1.25rem, 6vw, 4rem) 22vh;   /* sits higher than before */
+  padding: 12vh clamp(1.25rem, 6vw, 4rem) 22vh;
   text-align: center;
 }
-
 .stanza {
-  max-width: 16ch;
-  margin: 12vh auto;
+  max-width: min(92vw, var(--measure));   /* wide centred measure, like the Figma */
+  margin: 11vh auto;
   font-size: var(--type-manifesto);
-  letter-spacing: -0.01em;
+  line-height: 0.9;
+  letter-spacing: -0.02em;                /* −1.2px at 60px */
   text-transform: uppercase;
-  text-wrap: balance;
+  /* NOTE: no text-wrap: balance — wrapping stays natural like the Figma */
 }
-.stanza--mark { letter-spacing: 0.02em; }
+.stanza--mark { letter-spacing: 0.0em; }
 
-/* Scroll reveal — only applied when JS is on (so no-JS still shows text) */
+/* Scroll reveal — only when JS is on (no-JS still shows text) */
 .js .stanza {
-  opacity: 0; transform: translateY(22px);
+  opacity: 0; transform: translateY(20px);
   transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
 }
 .js .stanza.in { opacity: 1; transform: none; }
 
-/* Per-letter spans injected by script.js for the hover effect */
+/* Per-letter shatter scaffolding (built by script.js) */
 .word { display: inline-block; }
-.ch   { display: inline-block; will-change: transform, opacity; }
-.ch.relax { transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease; }
+.ch   { position: relative; display: inline-block; }
+.ch .base { display: inline-block; }
+.ch .frag {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  opacity: 0; pointer-events: none; will-change: transform, opacity;
+}
 
 /* ---- Contact ----------------------------------------------------- */
 .contact {
@@ -123,12 +119,9 @@ a:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
   padding: 8vh clamp(1.25rem, 6vw, 4rem) 14vh;
   text-align: center; border-top: 1px solid var(--hair);
 }
-.contact__eyebrow {
-  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.55;
-}
+.contact__eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.55; }
 .contact__email {
-  color: var(--fg);
-  font-size: clamp(1.6rem, 6vw, 3.5rem);
+  color: var(--fg); font-size: clamp(1.6rem, 6vw, 3.5rem);
   font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; text-decoration: none;
   transition: opacity 0.3s ease;
 }
@@ -136,15 +129,14 @@ a:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
 
 /* ---- Footer ------------------------------------------------------ */
 .footer {
-  padding: 2rem clamp(1.25rem, 6vw, 4rem) 3rem;
-  text-align: center; font-size: 0.72rem; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.4;
+  padding: 2rem clamp(1.25rem, 6vw, 4rem) 3rem; text-align: center;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.4;
 }
 
-/* ---- Reduced motion: hold everything still ---------------------- */
+/* ---- Reduced motion --------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .js .stanza { opacity: 1 !important; transform: none !important; transition: none; }
-  .ch { transform: none !important; opacity: 1 !important; }
+  .ch .frag { display: none !important; }
   .nav__link::after { transition: none; }
 }
