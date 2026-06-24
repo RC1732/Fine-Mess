@@ -1,117 +1,372 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fine Mess — Creative projects that make a mark</title>
-  <meta name="description" content="Fine Mess is a creative studio founded on integrity of creativity. Not a style but a standard." />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fine Mess</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg:#000000; --ink:#ffffff;
+    --logo-max:330px; --edge:22px;
+
+    --grid-gap:26px; --grid-dim:0.022; --grid-lit:0.14;
+    --light-size:300px; --bloom:0.10; --aura:0.05;
+    --grain-opacity:0.05; --parallax:4;
+
+    --copy-w:565px;          /* manifesto column width (matches Figma) */
+
+    --mx:50%; --my:50%; --lit:0.4;
+  }
+
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body {
+    background:var(--bg); color:var(--ink);
+    font-family:"Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+
+  .layer { position:fixed; inset:0; pointer-events:none; }
+
+  /* ---- Shared living background ---- */
+  .grid-base {
+    z-index:0;
+    background-image:radial-gradient(circle, rgba(255,255,255,var(--grid-dim)) 1px, transparent 1.7px);
+    background-size:var(--grid-gap) var(--grid-gap);
+    animation:drift 48s linear infinite;
+  }
+  .grid-lit {
+    z-index:1;
+    background-image:radial-gradient(circle, rgba(255,255,255,var(--grid-lit)) 1px, transparent 1.7px);
+    background-size:var(--grid-gap) var(--grid-gap);
+    animation:drift 48s linear infinite;
+    -webkit-mask-image:radial-gradient(circle var(--light-size) at var(--mx) var(--my), #000 0%, rgba(0,0,0,.35) 45%, transparent 72%);
+            mask-image:radial-gradient(circle var(--light-size) at var(--mx) var(--my), #000 0%, rgba(0,0,0,.35) 45%, transparent 72%);
+  }
+  .bloom {
+    z-index:2;
+    background:radial-gradient(circle var(--light-size) at var(--mx) var(--my), rgba(225,235,255,1) 0%, rgba(255,255,255,0) 70%);
+    opacity:calc(var(--bloom) * var(--lit)); mix-blend-mode:screen;
+  }
+  .aura {
+    z-index:1; opacity:var(--aura);
+    background:
+      radial-gradient(40vmax 40vmax at 30% 35%, rgba(190,205,235,.9), transparent 60%),
+      radial-gradient(38vmax 38vmax at 72% 68%, rgba(160,175,205,.8), transparent 60%);
+    filter:blur(40px); animation:aura 26s ease-in-out infinite;
+  }
+  .vignette {
+    z-index:3;
+    background:radial-gradient(125% 125% at 50% 50%, transparent 52%, rgba(0,0,0,.9) 100%);
+  }
+  @keyframes drift { from{background-position:0 0;} to{background-position:var(--grid-gap) var(--grid-gap);} }
+  @keyframes aura {
+    0%,100%{transform:translate(0,0) scale(1);}
+    33%{transform:translate(4%,-3%) scale(1.08);}
+    66%{transform:translate(-3%,4%) scale(.96);}
+  }
+
+  /* ---- Shared label type ---- */
+  .label {
+    color:var(--ink); text-decoration:none;
+    font-weight:450; font-size:18px; line-height:1.27;
+    letter-spacing:-0.02em; text-transform:uppercase;
+    font-feature-settings:"dlig" 1;
+    transition:letter-spacing .5s ease, opacity .6s ease;
+    padding:6px 4px;
+  }
+  .label:hover, .label:focus-visible { letter-spacing:.05em; }
+  .label:focus-visible { outline:1px solid rgba(255,255,255,.5); outline-offset:6px; }
+
+  /* ---- Views ---- */
+  .view {
+    position:fixed; inset:0; z-index:5;
+    transition:opacity .7s ease, transform .8s cubic-bezier(.16,1,.3,1);
+  }
+
+  /* HOME */
+  #home .nav { position:fixed; left:0; right:0; display:flex; justify-content:center; }
+  #home .nav a { opacity:0; }
+  body.ready #home .nav a { opacity:1; }
+  #home .nav--top { top:var(--edge); }
+  #home .nav--bottom { bottom:var(--edge); }
+
+  #home .frame { position:fixed; inset:0; display:grid; place-items:center; }
+  #home .stage { width:min(var(--logo-max),62vw); will-change:transform; }
+  #home .mark { display:block; width:100%; height:auto; opacity:0; transform:scale(.99); }
+  body.ready #home .mark { opacity:1; transform:scale(1); transition:opacity 1.2s ease, transform 1.2s cubic-bezier(.16,1,.3,1); }
+
+  /* MANIFESTO (hidden until routed in) */
+  #manifesto {
+    opacity:0; transform:translateY(26px); pointer-events:none;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  #manifesto::-webkit-scrollbar { width:8px; }
+  #manifesto::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:8px; }
+  #manifesto { scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.12) transparent; }
+
+  .copy {
+    max-width:var(--copy-w);
+    margin:0 auto; padding:14vh 24px 18vh;
+    text-align:center;
+    font-weight:450; font-size:18px; line-height:1.27;
+    letter-spacing:-0.02em; text-transform:uppercase;
+    font-feature-settings:"dlig" 1;
+  }
+  .copy p { margin:0 0 22px; }
+  .copy .sig { margin-top:8px; }
+  .copy .word { display:inline-block; white-space:nowrap; }
+  .copy .ch { display:inline-block; will-change:transform; }
+
+  /* View state machine driven by one body class */
+  body.view-manifesto #home { opacity:0; transform:scale(.985); pointer-events:none; }
+  body.view-manifesto #manifesto { opacity:1; transform:none; pointer-events:auto; cursor:pointer; }
+
+  /* ---- Grain on top ---- */
+  .grain {
+    z-index:4; inset:-150%;
+    opacity:var(--grain-opacity); mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 6s steps(8) infinite;
+  }
+  @keyframes grain {
+    0%{transform:translate(0,0)}25%{transform:translate(-4%,3%)}50%{transform:translate(5%,-3%)}
+    75%{transform:translate(-3%,5%)}100%{transform:translate(0,0)}
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid-base, .grid-lit, .aura, .grain { animation:none; }
+    .view { transition:opacity .3s ease; }
+    body.view-manifesto #home { transform:none; }
+    #manifesto { transform:none; }
+  }
+</style>
 </head>
 <body>
 
-  <!-- Skip link for keyboard users -->
-  <a class="skip-link" href="#manifesto">Skip to manifesto</a>
+  <!-- shared background -->
+  <div class="layer grid-base"></div>
+  <div class="layer aura"></div>
+  <div class="layer grid-lit"></div>
+  <div class="layer bloom"></div>
+  <div class="layer vignette"></div>
 
-  <!-- Scroll progress hairline (fills left-to-right as you scrub the manifesto) -->
-  <div class="progress" aria-hidden="true"></div>
+  <!-- HOME -->
+  <section id="home" class="view">
+    <main class="frame">
+      <div class="stage" id="stage">
+        <!-- Live Figma asset (expires ~7 days). Swap for a local export for production. -->
+        <img class="mark" id="mark"
+             src="https://www.figma.com/api/mcp/asset/47bfa224-d876-4190-9a9e-f14135c076b5"
+             alt="Fine Mess" />
+      </div>
+    </main>
+    <nav class="nav nav--bottom"><a class="label" href="#manifesto">Manifesto</a></nav>
+  </section>
 
-  <!-- ===================================================================
-       STICKY NAV
-       Solid black backdrop so body copy never clashes as it scrolls under.
-       CONTACT only, centred + large (matches the Figma). Scrolls to the
-       contact block at the end.
-  ==================================================================== -->
-  <header class="nav">
-    <a class="nav__link" href="#contact">Contact</a>
-  </header>
+  <!-- MANIFESTO -->
+  <section id="manifesto" class="view" aria-label="Manifesto">
+    <div class="copy">
+      <p>Fine Mess is a creative studio founded<br/>on integrity of creativity.</p>
+      <p>Because too often we hear ‘no’ through fear.<br/>Ideas and innovation wilt because of ‘what if?’</p>
+      <p>Watered down to dry out. Ships that<br/>never leave safe harbour.<br/><br/>Well for us idea is king.</p>
+      <p>Not process.<br/>Not parent.<br/>Not procurement<br/>or placement or palette.<br/><br/>Idea.</p>
+      <p>We’re here to smash champagne against<br/>their hulls. And all our energy goes towards<br/>making them better.</p>
+      <p>We’re in the business of creative direction,<br/>not creative protection. Acceptable is unacceptable.</p>
+      <p>And JFDI can JFD1 Anyway, properly realised<br/>creative returns the most profit. Not to mention pride. So we craft the things that scare us a little.</p>
+      <p>And respect audiences a lot. That entertain and educate. Challenge and sooth. Message and move. Brands, campaigns, podcasts, platforms,<br/>design, music, merch, movies… You name it,<br/>we’ll fame it.</p>
+      <p>Because people deserve it. And if we don't know how we’ll learn. Because done is better than perfect. Then we perfect that.<br/><br/>That’s Fine Mess. Not a style but a standard.<br/>A mantra, a method and a mission.</p>
+      <p class="sig">Fine Mess</p>
+      <p>Creative projects that make a mark</p>
+    </div>
+  </section>
 
-  <main>
+  <div class="layer grain"></div>
 
-    <!-- ===================================================================
-         MANIFESTO
-         ---------------------------------------------------------------
-         TO EDIT THE COPY: each <p class="stanza"> is one block of the
-         manifesto. Just write the sentence as plain text.
+  <script>
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const root  = document.documentElement;
+    const stage = document.getElementById("stage");
+    const mark  = document.getElementById("mark");
+    const manifesto = document.getElementById("manifesto");
+    const parallax = parseFloat(getComputedStyle(root).getPropertyValue("--parallax")) || 0;
 
-         • Add a block     -> copy a <p class="stanza">…</p> line.
-         • Remove a block   -> delete the whole <p class="stanza">…</p> line.
-         • Line breaks are AUTOMATIC and responsive — do NOT add <br>.
-         • Keep blocks short (a line or two) — they read best that way.
+    /* ---- view routing ---- */
+    function route() {
+      const isM = location.hash.replace("#","") === "manifesto";
+      document.body.classList.toggle("view-manifesto", isM);
+      if (isM) { manifesto.scrollTop = 0; }
+      else if (window.__relaxLetters) window.__relaxLetters();
+    }
+    addEventListener("hashchange", route);
+    addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && document.body.classList.contains("view-manifesto")) {
+        location.hash = "home";
+      }
+    });
+    // Click anywhere on the manifesto to return home (but not when selecting text).
+    manifesto.addEventListener("click", () => {
+      const sel = window.getSelection && window.getSelection().toString();
+      if (sel) return;
+      location.hash = "home";
+    });
 
-         The hover-particle effect is added automatically by script.js;
-         you never need to touch the markup for it to work.
-    ==================================================================== -->
-    <section id="manifesto" class="manifesto" aria-label="The Fine Mess manifesto">
+    /* ---- split the manifesto into letters for the push effect ---- */
+    const RADIUS = 115, MAXPUSH = 22, MAXROT = 16, EASE = 0.18;
+    let chEls = [], cx0 = [], cyDoc = [], curX = [], curY = [], curR = [], dirty = [];
+    let measured = false, hovering = false, rawX = innerWidth/2, rawY = innerHeight/2;
 
-      <p class="stanza">Fine Mess is a creative studio founded on integrity of creativity.</p>
+    function buildLetters() {
+      if (reduce) return;                       // honour reduced motion: stay still
+      manifesto.querySelectorAll(".copy p").forEach((p) => {
+        const frag = document.createDocumentFragment();
+        let word = null;
+        const flush = () => { if (word) { frag.appendChild(word); word = null; } };
+        p.childNodes.forEach((node) => {
+          if (node.nodeType === 3) {            // text node
+            for (const chr of node.nodeValue) {
+              if (chr === " ") {                // space -> end the word, keep a real space
+                flush();
+                frag.appendChild(document.createTextNode(" "));
+              } else {                          // letter -> add to the current word
+                if (!word) { word = document.createElement("span"); word.className = "word"; }
+                const s = document.createElement("span");
+                s.className = "ch"; s.textContent = chr;
+                word.appendChild(s);
+              }
+            }
+          } else {                              // <br> etc. -> end the word, keep the node
+            flush();
+            frag.appendChild(node.cloneNode(true));
+          }
+        });
+        flush();
+        p.textContent = ""; p.appendChild(frag);
+      });
+      chEls = Array.from(manifesto.querySelectorAll(".ch"));
+      const n = chEls.length;
+      cx0 = new Float32Array(n); cyDoc = new Float32Array(n);
+      curX = new Float32Array(n); curY = new Float32Array(n);
+      curR = new Float32Array(n); dirty = new Uint8Array(n);
+    }
 
-      <p class="stanza">Because too often we hear &lsquo;no&rsquo; through fear.</p>
+    function measure() {
+      if (!chEls.length) return;
+      const st = manifesto.scrollTop;
+      for (let i = 0; i < chEls.length; i++) {
+        const r = chEls[i].getBoundingClientRect();
+        cx0[i]   = r.left + r.width / 2;
+        cyDoc[i] = r.top + st + r.height / 2;     // store independent of scroll
+      }
+      measured = true;
+    }
 
-      <p class="stanza">Ideas and innovation wilt because of &lsquo;what if?&rsquo;</p>
+    window.__relaxLetters = function () {
+      hovering = false;
+      for (let i = 0; i < chEls.length; i++) {
+        curX[i] = curY[i] = curR[i] = 0;
+        if (dirty[i]) { chEls[i].style.transform = ""; dirty[i] = 0; }
+      }
+    };
 
-      <p class="stanza">Watered down to dry out. Ships that never leave safe harbour.</p>
+    // Re-measure once the entrance transition lands, and on resize.
+    manifesto.addEventListener("transitionend", (e) => {
+      if (e.propertyName === "transform" && document.body.classList.contains("view-manifesto")) measure();
+    });
+    let rz; addEventListener("resize", () => {
+      clearTimeout(rz);
+      rz = setTimeout(() => { if (document.body.classList.contains("view-manifesto")) measure(); }, 150);
+    });
 
-      <p class="stanza">Well for us idea is king.</p>
+    /* ---- background light + letter push ---- */
+    function start() {
+      document.body.classList.add("ready");
+      buildLetters();
+      route();
 
-      <p class="stanza">Not process. Not parent. Not procurement or placement or palette.</p>
+      let cx = innerWidth/2, cy = innerHeight/2, tx = cx, ty = cy;
+      let lit = 0.4, litT = 0.4, px = 0, py = 0, lastMove = -9999;
 
-      <p class="stanza">Idea.</p>
+      addEventListener("pointermove", (e) => {
+        tx = e.clientX; ty = e.clientY; litT = 1; lastMove = performance.now();
+        rawX = e.clientX; rawY = e.clientY; hovering = true;
+        if (!measured && document.body.classList.contains("view-manifesto")) measure();
+      }, { passive:true });
+      addEventListener("pointerleave", () => { litT = 0.4; hovering = false; });
+      addEventListener("blur", () => { hovering = false; });
 
-      <p class="stanza">We&rsquo;re here to smash champagne against their hulls.</p>
+      const R2 = RADIUS * RADIUS;
 
-      <p class="stanza">And all our energy goes towards making them better.</p>
+      function frame(now) {
+        if (now - lastMove > 1100) {
+          tx += (innerWidth/2 - tx) * 0.02;
+          ty += (innerHeight/2 - ty) * 0.02;
+          litT += (0.4 - litT) * 0.04;
+        }
+        cx += (tx - cx) * 0.10;
+        cy += (ty - cy) * 0.10;
+        lit += (litT - lit) * 0.06;
 
-      <p class="stanza">We&rsquo;re in the business of creative direction, not creative protection.</p>
+        root.style.setProperty("--mx", cx.toFixed(1) + "px");
+        root.style.setProperty("--my", cy.toFixed(1) + "px");
+        root.style.setProperty("--lit", lit.toFixed(3));
 
-      <p class="stanza">Acceptable is unacceptable.</p>
+        const nx = (cx - innerWidth/2) / (innerWidth/2);
+        const ny = (cy - innerHeight/2) / (innerHeight/2);
+        px += (nx * parallax - px) * 0.08;
+        py += (ny * parallax - py) * 0.08;
+        stage.style.transform = "translate(" + px.toFixed(2) + "px," + py.toFixed(2) + "px)";
 
-      <!-- NOTE: Figma read "JFDI can JFD1" — corrected the typo to "JFDI". Revert if intended. -->
-      <p class="stanza">And JFDI can JFDI. Anyway, properly realised creative returns the most profit.</p>
+        // letter push — only while reading the manifesto
+        if (measured && document.body.classList.contains("view-manifesto")) {
+          const st = manifesto.scrollTop;
+          for (let i = 0; i < chEls.length; i++) {
+            let tX = 0, tY = 0, tR = 0, sc = 1;
+            if (hovering) {
+              const dx = cx0[i] - rawX;
+              const dy = (cyDoc[i] - st) - rawY;
+              const d2 = dx*dx + dy*dy;
+              if (d2 < R2) {
+                const d = Math.sqrt(d2) || 0.0001;
+                const f = 1 - d / RADIUS;          // 1 at cursor -> 0 at edge
+                const push = f * MAXPUSH;
+                tX = (dx / d) * push;
+                tY = (dy / d) * push;
+                tR = f * MAXROT * (dx < 0 ? -1 : 1);
+                sc = 1 + f * 0.12;
+              }
+            }
+            curX[i] += (tX - curX[i]) * EASE;
+            curY[i] += (tY - curY[i]) * EASE;
+            curR[i] += (tR - curR[i]) * EASE;
 
-      <p class="stanza">Not to mention pride.</p>
+            const atRest = Math.abs(curX[i]) < 0.05 && Math.abs(curY[i]) < 0.05 && Math.abs(curR[i]) < 0.05;
+            if (atRest && tX === 0 && tY === 0) {
+              if (dirty[i]) { chEls[i].style.transform = ""; dirty[i] = 0; }
+            } else {
+              chEls[i].style.transform =
+                "translate(" + curX[i].toFixed(1) + "px," + curY[i].toFixed(1) + "px) rotate(" +
+                curR[i].toFixed(2) + "deg) scale(" + sc.toFixed(3) + ")";
+              dirty[i] = 1;
+            }
+          }
+        }
 
-      <p class="stanza">So we craft the things that scare us a little.</p>
+        requestAnimationFrame(frame);
+      }
+      if (!reduce) requestAnimationFrame(frame);
 
-      <p class="stanza">And respect audiences a lot. That entertain and educate. Challenge and sooth.</p>
+      // measure after fonts settle so letter centres are accurate
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (document.body.classList.contains("view-manifesto")) measure(); });
+    }
 
-      <p class="stanza">Message and move. Brands, campaigns, podcasts, platforms, design, music, merch, movies&hellip;</p>
-
-      <p class="stanza">You name it, we&rsquo;ll fame it.</p>
-
-      <p class="stanza">Because people deserve it.</p>
-
-      <p class="stanza">And if we don&rsquo;t know how, we&rsquo;ll learn.</p>
-
-      <p class="stanza">Because done is better than perfect. Then we perfect that.</p>
-
-      <p class="stanza">That&rsquo;s Fine Mess.</p>
-
-      <p class="stanza">Not a style but a standard.</p>
-
-      <p class="stanza">A mantra, a method and a mission.</p>
-
-      <p class="stanza stanza--mark">Fine Mess</p>
-
-      <p class="stanza">Creative projects that make a mark.</p>
-
-    </section>
-
-    <!-- ===================================================================
-         CONTACT  — the CONTACT nav item scrolls here. Edit the email below.
-    ==================================================================== -->
-    <section id="contact" class="contact" aria-label="Contact Fine Mess">
-      <p class="contact__eyebrow">Get in touch</p>
-      <!-- EDIT EMAIL HERE (appears in the href and the visible text) -->
-      <a class="contact__email" href="mailto:hello@finemess.studio">hello@finemess.studio</a>
-    </section>
-
-  </main>
-
-  <footer class="footer">
-    <!-- EDIT FOOTER LINE HERE -->
-    <span>&copy; <span class="footer__year">2026</span> Fine Mess</span>
-  </footer>
-
-  <script src="script.js"></script>
+    if (mark.complete) start();
+    else { mark.addEventListener("load", start); mark.addEventListener("error", start); }
+  </script>
 </body>
 </html>
