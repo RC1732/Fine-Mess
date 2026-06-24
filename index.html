@@ -74,11 +74,11 @@
   /* ---- Shared label type ---- */
   .label {
     color:var(--ink); text-decoration:none;
-    font-weight:450; font-size:18px; line-height:1.27;
+    font-weight:450; font-size:clamp(15px, 4vw, 18px); line-height:1.27;
     letter-spacing:-0.02em; text-transform:uppercase;
     font-feature-settings:"dlig" 1;
     transition:letter-spacing .5s ease, opacity .6s ease;
-    padding:6px 4px;
+    padding:10px 16px;
   }
   .label:hover, .label:focus-visible { letter-spacing:.05em; }
   .label:focus-visible { outline:1px solid rgba(255,255,255,.5); outline-offset:6px; }
@@ -94,10 +94,10 @@
   #home .nav a { opacity:0; }
   body.ready #home .nav a { opacity:1; }
   #home .nav--top { top:var(--edge); }
-  #home .nav--bottom { bottom:var(--edge); }
+  #home .nav--bottom { bottom:max(var(--edge), env(safe-area-inset-bottom)); }
 
   #home .frame { position:fixed; inset:0; display:grid; place-items:center; }
-  #home .stage { width:min(var(--logo-max),62vw); will-change:transform; }
+  #home .stage { width:min(var(--logo-max), 72vw); will-change:transform; }
   #home .mark { display:block; width:100%; height:auto; opacity:0; transform:scale(.99); }
   body.ready #home .mark { opacity:1; transform:scale(1); transition:opacity 1.2s ease, transform 1.2s cubic-bezier(.16,1,.3,1); }
 
@@ -112,13 +112,13 @@
 
   .copy {
     max-width:var(--copy-w);
-    margin:0 auto; padding:14vh 24px 18vh;
+    margin:0 auto; padding:clamp(11vh, 14vh, 16vh) clamp(20px, 6vw, 24px) 22vh;
     text-align:center;
-    font-weight:450; font-size:18px; line-height:1.27;
+    font-weight:450; font-size:clamp(15px, 4.2vw, 18px); line-height:1.4;
     letter-spacing:-0.02em; text-transform:uppercase;
     font-feature-settings:"dlig" 1;
   }
-  .copy p { margin:0 0 22px; }
+  .copy p { margin:0 0 clamp(18px, 5vw, 22px); text-wrap:pretty; }
   .copy .sig { margin-top:8px; }
   .copy .word { display:inline-block; white-space:nowrap; }
   .copy .ch { display:inline-block; will-change:transform; }
@@ -172,15 +172,18 @@
   <!-- MANIFESTO -->
   <section id="manifesto" class="view" aria-label="Manifesto">
     <div class="copy">
-      <p>Fine Mess is a creative studio founded<br/>on integrity of creativity.</p>
-      <p>Because too often we hear ‘no’ through fear.<br/>Ideas and innovation wilt because of ‘what if?’</p>
-      <p>Watered down to dry out. Ships that<br/>never leave safe harbour.<br/><br/>Well for us idea is king.</p>
-      <p>Not process.<br/>Not parent.<br/>Not procurement<br/>or placement or palette.<br/><br/>Idea.</p>
-      <p>We’re here to smash champagne against<br/>their hulls. And all our energy goes towards<br/>making them better.</p>
-      <p>We’re in the business of creative direction,<br/>not creative protection. Acceptable is unacceptable.</p>
-      <p>And JFDI can JFD1 Anyway, properly realised<br/>creative returns the most profit. Not to mention pride. So we craft the things that scare us a little.</p>
-      <p>And respect audiences a lot. That entertain and educate. Challenge and sooth. Message and move. Brands, campaigns, podcasts, platforms,<br/>design, music, merch, movies… You name it,<br/>we’ll fame it.</p>
-      <p>Because people deserve it. And if we don't know how we’ll learn. Because done is better than perfect. Then we perfect that.<br/><br/>That’s Fine Mess. Not a style but a standard.<br/>A mantra, a method and a mission.</p>
+      <p>Fine Mess is a creative studio founded on integrity of creativity.</p>
+      <p>Because too often we hear ‘no’ through fear. Ideas and innovation wilt because of ‘what if?’</p>
+      <p>Watered down to dry out. Ships that never leave safe harbour.</p>
+      <p>Well for us idea is king.</p>
+      <p>Not process.<br/>Not parent.<br/>Not procurement or placement or palette.</p>
+      <p>Idea.</p>
+      <p>We’re here to smash champagne against their hulls. And all our energy goes towards making them better.</p>
+      <p>We’re in the business of creative direction, not creative protection. Acceptable is unacceptable.</p>
+      <p>And JFDI can JFD1 Anyway, properly realised creative returns the most profit. Not to mention pride. So we craft the things that scare us a little.</p>
+      <p>And respect audiences a lot. That entertain and educate. Challenge and sooth. Message and move. Brands, campaigns, podcasts, platforms, design, music, merch, movies… You name it, we’ll fame it.</p>
+      <p>Because people deserve it. And if we don't know how we’ll learn. Because done is better than perfect. Then we perfect that.</p>
+      <p>That’s Fine Mess. Not a style but a standard. A mantra, a method and a mission.</p>
       <p class="sig">Fine Mess</p>
       <p>Creative projects that make a mark</p>
     </div>
@@ -190,6 +193,7 @@
 
   <script>
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarse = window.matchMedia("(hover: none) and (pointer: coarse)").matches; // touch / no cursor
     const root  = document.documentElement;
     const stage = document.getElementById("stage");
     const mark  = document.getElementById("mark");
@@ -216,37 +220,42 @@
       location.hash = "home";
     });
 
-    /* ---- split the manifesto into letters for the push effect ---- */
+    /* ---- manifesto type: words, letters, and widow/orphan control ---- */
     const RADIUS = 115, MAXPUSH = 22, MAXROT = 16, EASE = 0.18;
     let chEls = [], cx0 = [], cyDoc = [], curX = [], curY = [], curR = [], dirty = [];
     let measured = false, hovering = false, rawX = innerWidth/2, rawY = innerHeight/2;
 
-    function buildLetters() {
-      if (reduce) return;                       // honour reduced motion: stay still
+    // Wrap every word in a no-wrap span (runs on all devices). Spaces stay as text
+    // nodes between words so lines still break at spaces; <br> is preserved.
+    function buildWords() {
       manifesto.querySelectorAll(".copy p").forEach((p) => {
         const frag = document.createDocumentFragment();
         let word = null;
         const flush = () => { if (word) { frag.appendChild(word); word = null; } };
         p.childNodes.forEach((node) => {
-          if (node.nodeType === 3) {            // text node
+          if (node.nodeType === 3) {
             for (const chr of node.nodeValue) {
-              if (chr === " ") {                // space -> end the word, keep a real space
-                flush();
-                frag.appendChild(document.createTextNode(" "));
-              } else {                          // letter -> add to the current word
+              if (chr === " ") { flush(); frag.appendChild(document.createTextNode(" ")); }
+              else {
                 if (!word) { word = document.createElement("span"); word.className = "word"; }
-                const s = document.createElement("span");
-                s.className = "ch"; s.textContent = chr;
-                word.appendChild(s);
+                word.appendChild(document.createTextNode(chr));
               }
             }
-          } else {                              // <br> etc. -> end the word, keep the node
-            flush();
-            frag.appendChild(node.cloneNode(true));
-          }
+          } else { flush(); frag.appendChild(node.cloneNode(true)); }  // <br> etc.
         });
         flush();
         p.textContent = ""; p.appendChild(frag);
+      });
+    }
+
+    // Split each word's text into letter spans (cursor devices only — for the push).
+    function splitLetters() {
+      manifesto.querySelectorAll(".copy .word").forEach((w) => {
+        const text = w.textContent; w.textContent = "";
+        for (const chr of text) {
+          const s = document.createElement("span"); s.className = "ch"; s.textContent = chr;
+          w.appendChild(s);
+        }
       });
       chEls = Array.from(manifesto.querySelectorAll(".ch"));
       const n = chEls.length;
@@ -255,16 +264,57 @@
       curR = new Float32Array(n); dirty = new Uint8Array(n);
     }
 
+    // No widows or orphans: find any rendered line left with a single word and bind it
+    // to a neighbour with a non-breaking space. Re-derives lines from layout, so it's
+    // correct at any width and after the fonts load.
+    function deWidow() {
+      manifesto.querySelectorAll(".copy p").forEach((p) => {
+        // reset previous binds
+        p.childNodes.forEach((n) => { if (n.nodeType === 3 && n.nodeValue.indexOf("\u00A0") >= 0) n.nodeValue = " "; });
+        let guard = 0;
+        const fixOnce = () => {
+          const words = Array.from(p.children).filter((el) => el.classList && el.classList.contains("word"));
+          if (words.length < 2) return false;
+          // group words into visual lines by vertical position
+          const lines = []; let cur = null, top = null;
+          words.forEach((w) => {
+            const t = w.offsetTop;
+            if (top === null || Math.abs(t - top) > 4) { cur = []; lines.push(cur); top = t; }
+            cur.push(w);
+          });
+          if (lines.length < 2) return false;
+          for (let li = lines.length - 1; li >= 0; li--) {
+            if (lines[li].length !== 1) continue;
+            const w = lines[li][0];
+            // li>0: pull the lone word up to the previous line; li===0: pull the next word down to it
+            let sep = (li > 0) ? w.previousSibling : w.nextSibling;
+            const step = (li > 0) ? "previousSibling" : "nextSibling";
+            while (sep && sep.nodeType !== 3) {
+              if (sep.nodeName === "BR") { sep = null; break; }   // don't cross a forced break
+              sep = sep[step];
+            }
+            if (sep && sep.nodeType === 3 && sep.nodeValue.indexOf("\u00A0") < 0) {
+              sep.nodeValue = "\u00A0"; return true;
+            }
+          }
+          return false;
+        };
+        while (guard++ < 14 && fixOnce()) { /* re-measure each pass */ }
+      });
+    }
+
     function measure() {
       if (!chEls.length) return;
       const st = manifesto.scrollTop;
       for (let i = 0; i < chEls.length; i++) {
         const r = chEls[i].getBoundingClientRect();
         cx0[i]   = r.left + r.width / 2;
-        cyDoc[i] = r.top + st + r.height / 2;     // store independent of scroll
+        cyDoc[i] = r.top + st + r.height / 2;
       }
       measured = true;
     }
+
+    function relayout() { deWidow(); measure(); }
 
     window.__relaxLetters = function () {
       hovering = false;
@@ -274,20 +324,22 @@
       }
     };
 
-    // Re-measure once the entrance transition lands, and on resize.
-    manifesto.addEventListener("transitionend", (e) => {
-      if (e.propertyName === "transform" && document.body.classList.contains("view-manifesto")) measure();
-    });
-    let rz; addEventListener("resize", () => {
-      clearTimeout(rz);
-      rz = setTimeout(() => { if (document.body.classList.contains("view-manifesto")) measure(); }, 150);
-    });
+    let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(relayout, 150); });
 
     /* ---- background light + letter push ---- */
     function start() {
       document.body.classList.add("ready");
-      buildLetters();
+      buildWords();                                   // word grouping on every device
+      if (!reduce && !coarse) splitLetters();         // letters only where there's a cursor
       route();
+
+      // De-widow/orphan once fonts are settled (wrapping depends on the real font metrics).
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+      else relayout();
+
+      // Touch devices have no cursor; reduced-motion wants stillness.
+      // The grid/aura/grain run from CSS regardless, and the light rests at centre.
+      if (reduce || coarse) return;
 
       let cx = innerWidth/2, cy = innerHeight/2, tx = cx, ty = cy;
       let lit = 0.4, litT = 0.4, px = 0, py = 0, lastMove = -9999;
@@ -359,10 +411,7 @@
 
         requestAnimationFrame(frame);
       }
-      if (!reduce) requestAnimationFrame(frame);
-
-      // measure after fonts settle so letter centres are accurate
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (document.body.classList.contains("view-manifesto")) measure(); });
+      requestAnimationFrame(frame);
     }
 
     if (mark.complete) start();
